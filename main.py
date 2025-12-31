@@ -14,16 +14,14 @@ client = genai.Client(api_key=api_key)
 
 
 class TikTokAge(BaseModel):
-    """Structured response model for image analysis"""
     quartile_1: str
     quartile_2: str
     quartile_3: str
     quartile_4: str
     quartile_5: str
 
-def handle_tt_age_breakdown():
-    # Load the image
-    image = Image.open('./age.jpeg')
+def handle_tt_age_breakdown(age_img_path: str):
+    image = Image.open(age_img_path)
 
     response = client.models.generate_content(
         model='gemini-2.5-flash',
@@ -46,6 +44,36 @@ def handle_tt_age_breakdown():
     )
 
     result = TikTokAge.model_validate_json(response.text)
-    print(result)
+    return result
 
-handle_tt_age_breakdown()
+class TikTokGender(BaseModel):
+    male: str
+    female: str
+
+def handle_tt_gender_breakdown(tt_gender_path: str):
+    # Load the image
+    image = Image.open(tt_gender_path)
+
+    response = client.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=[
+            (
+                'Output the values in Tik Tok Gender breakdown'
+                'ouptut: '
+                'male: percentage in photo'
+                'female: percentage in photo'
+            ),
+            image
+        ],
+        config=types.GenerateContentConfig(
+            response_mime_type='application/json',
+            response_schema=TikTokGender
+        )
+    )
+
+    result = TikTokGender.model_validate_json(response.text)
+    return result
+
+res = handle_tt_gender_breakdown('./gender.jpeg')
+print(res)
+
