@@ -9,29 +9,41 @@ from PIL import Image
 load_dotenv()
 
 
-class ImageAnalysisResponse(BaseModel):
+class TikTokAge(BaseModel):
     """Structured response model for image analysis"""
-    description: str
+    quartile_1: str
+    quartile_2: str
+    quartile_3: str
+    quartile_4: str
+    quartile_5: str
 
 
 api_key = os.getenv("GEMINI_API_KEY")
 client = genai.Client(api_key=api_key)
 
 # Load the image
-image = Image.open('./analytics.PNG')
+image = Image.open('./age.jpeg')
 
 response = client.models.generate_content(
-    model='gemini-2.0-flash-exp',
+    model='gemini-2.5-flash',
     contents=[
-        'Please analyze this image',
-        image  # PIL Image directly
+        (
+            'Output the values in Tik Tok Age breakdown for each quartile'
+            'ouptut: '
+            'quartile 1: 18-24'
+            'quartile 2: 25-34'
+            'quartile 3: 35-44'
+            '...etc'
+            '**Output for each quartile field should only be the percentage shown in the image**'
+        ),
+        image
     ],
     config=types.GenerateContentConfig(
         response_mime_type='application/json',
-        response_schema=ImageAnalysisResponse
+        response_schema=TikTokAge
     )
 )
 
-result = ImageAnalysisResponse.model_validate_json(response.text)
+result = TikTokAge.model_validate_json(response.text)
 
 print(result)
