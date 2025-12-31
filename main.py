@@ -9,8 +9,8 @@ from PIL import Image
 load_dotenv()
 
 
-api_key = os.getenv("GEMINI_API_KEY")
-client = genai.Client(api_key=api_key)
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 
 class TikTokAge(BaseModel):
@@ -20,8 +20,8 @@ class TikTokAge(BaseModel):
     quartile_4: str
     quartile_5: str
 
-def handle_tt_age_breakdown(age_img_path: str):
-    image = Image.open(age_img_path)
+def handle_tt_age_breakdown(path: str):
+    image = Image.open(path)
 
     response = client.models.generate_content(
         model='gemini-2.5-flash',
@@ -50,9 +50,9 @@ class TikTokGender(BaseModel):
     male: str
     female: str
 
-def handle_tt_gender_breakdown(tt_gender_path: str):
+def handle_tt_gender_breakdown(path: str):
     # Load the image
-    image = Image.open(tt_gender_path)
+    image = Image.open(path)
 
     response = client.models.generate_content(
         model='gemini-2.5-flash',
@@ -74,6 +74,68 @@ def handle_tt_gender_breakdown(tt_gender_path: str):
     result = TikTokGender.model_validate_json(response.text)
     return result
 
-res = handle_tt_gender_breakdown('./gender.jpeg')
-print(res)
+class LocationData(BaseModel):
+    country: str
+    percentage: str
 
+class TikTokLocation(BaseModel):
+    primary: LocationData
+    second: LocationData
+    third: LocationData
+    fourth: LocationData
+    other: LocationData
+
+def handle_tt_location_breakdown(path: str):
+    image = Image.open(path)
+
+    response = client.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=[
+            (
+                'Output the values in Tik Tok Location breakdown. '
+                'For each location (primary, second, third, fourth, other), provide structured output with: '
+                'country: the country name, '
+                'percentage: the percentage value shown in the image. '
+                'Primary is the largest country, second is the second largest, etc.'
+            ),
+            image
+        ],
+        config=types.GenerateContentConfig(
+            response_mime_type='application/json',
+            response_schema=TikTokLocation
+        )
+    )
+
+    result = TikTokLocation.model_validate_json(response.text)
+    return result
+
+class IGGender(BaseModel):
+    male: str
+    female: str
+
+def handle_IG_gender_breakdown(path: str):
+    # Load the image
+    image = Image.open(path)
+
+    response = client.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=[
+            (
+                'Output the values in IG Gender breakdown'
+                'ouptut: '
+                'male: percentage in photo'
+                'female: percentage in photo'
+            ),
+            image
+        ],
+        config=types.GenerateContentConfig(
+            response_mime_type='application/json',
+            response_schema=IGGender
+        )
+    )
+
+    result = IGGender.model_validate_json(response.text)
+    return result
+
+res = handle_tt_location_breakdown('./tt_location.jpeg')
+print(res)
