@@ -5,7 +5,6 @@ from google.genai import types
 from pydantic import BaseModel
 from PIL import Image
 
-# Load environment variables
 load_dotenv()
 
 
