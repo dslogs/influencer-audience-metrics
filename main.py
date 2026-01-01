@@ -1,9 +1,12 @@
 import os
+import functions_framework
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 from pydantic import BaseModel
 from PIL import Image
+from io import BytesIO
+from flask import jsonify
 
 load_dotenv()
 
@@ -19,8 +22,8 @@ class TikTokAge(BaseModel):
     quartile_4: str
     quartile_5: str
 
-def handle_tt_age_breakdown(path: str):
-    image = Image.open(path)
+def handle_tt_age_breakdown(image_bytes: bytes):
+    image = Image.open(BytesIO(image_bytes))
 
     response = client.models.generate_content(
         model='gemini-2.5-flash',
@@ -49,9 +52,8 @@ class TikTokGender(BaseModel):
     male: str
     female: str
 
-def handle_tt_gender_breakdown(path: str):
-    # Load the image
-    image = Image.open(path)
+def handle_tt_gender_breakdown(image_bytes: bytes):
+    image = Image.open(BytesIO(image_bytes))
 
     response = client.models.generate_content(
         model='gemini-2.5-flash',
@@ -84,8 +86,8 @@ class TikTokLocation(BaseModel):
     fourth: LocationData
     other: LocationData
 
-def handle_tt_location_breakdown(path: str):
-    image = Image.open(path)
+def handle_tt_location_breakdown(image_bytes: bytes):
+    image = Image.open(BytesIO(image_bytes))
 
     response = client.models.generate_content(
         model='gemini-2.5-flash',
@@ -112,9 +114,8 @@ class IGGender(BaseModel):
     male: str
     female: str
 
-def handle_IG_gender_breakdown(path: str):
-    # Load the image
-    image = Image.open(path)
+def handle_IG_gender_breakdown(image_bytes: bytes):
+    image = Image.open(BytesIO(image_bytes))
 
     response = client.models.generate_content(
         model='gemini-2.5-flash',
@@ -136,5 +137,30 @@ def handle_IG_gender_breakdown(path: str):
     result = IGGender.model_validate_json(response.text)
     return result
 
-res = handle_tt_location_breakdown('./tt_location.jpeg')
-print(res)
+
+@functions_framework.http
+def tiktok_age_breakdown(request):
+    image_bytes = request.get_data()
+    result = handle_tt_age_breakdown(image_bytes)
+    return jsonify(result.model_dump())
+
+
+@functions_framework.http
+def tiktok_gender_breakdown(request):
+    image_bytes = request.get_data()
+    result = handle_tt_gender_breakdown(image_bytes)
+    return jsonify(result.model_dump())
+
+
+@functions_framework.http
+def tiktok_location_breakdown(request):
+    image_bytes = request.get_data()
+    result = handle_tt_location_breakdown(image_bytes)
+    return jsonify(result.model_dump())
+
+
+@functions_framework.http
+def instagram_gender_breakdown(request):
+    image_bytes = request.get_data()
+    result = handle_IG_gender_breakdown(image_bytes)
+    return jsonify(result.model_dump())
