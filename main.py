@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from PIL import Image
 from io import BytesIO
 from flask import jsonify
+from at import get_influencer_metric_attachments
 
 load_dotenv()
 
@@ -148,4 +149,34 @@ def main(request):
         return jsonify({'error' : 'no access'})
     
     record_id = data.get('record')
-    return jsonify({ 'record_id': record_id })
+
+    if record_id:
+        images = get_influencer_metric_attachments(record_id)
+        tt_location = None
+        if images['tt_location'] is not None:
+            tt_location = handle_tt_location_breakdown(images['tt_location'])
+        
+        tt_gender = None
+        if images['tt_gender'] is not None:
+            tt_gender = handle_tt_gender_breakdown(images['tt_gender'])
+        
+        tt_age = None
+        if images['tt_age'] is not None:
+            tt_age = handle_tt_age_breakdown(images['tt_age'])
+        
+        # TODO: need to implement all the IG metrics functions
+        ig_gender = None
+        if images['ig_gender'] is not None:
+            ig_gender = handle_IG_gender_breakdown(images['ig_gender'])
+        
+
+        return jsonify({
+            'tt_location': tt_location.model_dump() if tt_location else None,
+            'tt_gender' : tt_gender.model_dump() if tt_gender else None,
+            'tt_age' : tt_age.model_dump() if tt_age else None,
+            'ig_gender': ig_gender.model_dump() if ig_gender else None
+        })
+
+
+    else:
+        return jsonify({ 'error': 'no record' })
