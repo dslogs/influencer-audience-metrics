@@ -139,28 +139,45 @@ def handle_IG_gender_breakdown(image_bytes: bytes):
 
 
 @functions_framework.http
-def tiktok_age_breakdown(request):
+def main(request):
+    """
+    Single entry point for Google Cloud Function.
+    Routes to appropriate handler based on 'type' query parameter.
+
+    Expected query parameter:
+    - type: One of 'tiktok_age', 'tiktok_gender', 'tiktok_location', 'instagram_gender'
+    """
+    # Get the type parameter from query string
+    breakdown_type = request.args.get('type')
+
+    if not breakdown_type:
+        return jsonify({
+            'error': 'Missing required parameter: type',
+            'valid_types': ['tiktok_age', 'tiktok_gender', 'tiktok_location', 'instagram_gender']
+        }), 400
+
+    # Get image data from request body
     image_bytes = request.get_data()
-    result = handle_tt_age_breakdown(image_bytes)
-    return jsonify(result.model_dump())
 
+    if not image_bytes:
+        return jsonify({'error': 'No image data provided in request body'}), 400
 
-@functions_framework.http
-def tiktok_gender_breakdown(request):
-    image_bytes = request.get_data()
-    result = handle_tt_gender_breakdown(image_bytes)
-    return jsonify(result.model_dump())
+    # Route to appropriate handler
+    try:
+        if breakdown_type == 'tiktok_age':
+            result = handle_tt_age_breakdown(image_bytes)
+        elif breakdown_type == 'tiktok_gender':
+            result = handle_tt_gender_breakdown(image_bytes)
+        elif breakdown_type == 'tiktok_location':
+            result = handle_tt_location_breakdown(image_bytes)
+        elif breakdown_type == 'instagram_gender':
+            result = handle_IG_gender_breakdown(image_bytes)
+        else:
+            return jsonify({
+                'error': f'Invalid type: {breakdown_type}',
+                'valid_types': ['tiktok_age', 'tiktok_gender', 'tiktok_location', 'instagram_gender']
+            }), 400
 
-
-@functions_framework.http
-def tiktok_location_breakdown(request):
-    image_bytes = request.get_data()
-    result = handle_tt_location_breakdown(image_bytes)
-    return jsonify(result.model_dump())
-
-
-@functions_framework.http
-def instagram_gender_breakdown(request):
-    image_bytes = request.get_data()
-    result = handle_IG_gender_breakdown(image_bytes)
-    return jsonify(result.model_dump())
+        return jsonify(result.model_dump())
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
