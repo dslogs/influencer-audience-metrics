@@ -12,7 +12,7 @@ load_dotenv()
 
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-API_KEY = os.getenv("API_KEY")  # Your custom API key for authentication
+API_KEY = os.getenv("API_KEY")
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 
@@ -143,7 +143,7 @@ def handle_IG_gender_breakdown(image_bytes: bytes):
 def main(request):
     data = request.get_json()
     api_key = request.headers.get('X-API-Key')
-    
+
     if api_key != API_KEY:
         return jsonify({'error' : 'no access'})
     
