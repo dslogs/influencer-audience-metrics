@@ -51,8 +51,8 @@ def handle_tt_age_breakdown(image_bytes: bytes):
     return result
 
 class TikTokGender(BaseModel):
-    male: str
-    female: str
+    male: float
+    female: float
 
 def handle_tt_gender_breakdown(image_bytes: bytes):
     image = Image.open(BytesIO(image_bytes))
@@ -63,8 +63,8 @@ def handle_tt_gender_breakdown(image_bytes: bytes):
             (
                 'Output the values in Tik Tok Gender breakdown'
                 'ouptut: '
-                'male: percentage in photo'
-                'female: percentage in photo'
+                'male: percentage in photo converted to decimal'
+                'female: percentage in photo converted to decimal'
             ),
             image
         ],
@@ -79,7 +79,7 @@ def handle_tt_gender_breakdown(image_bytes: bytes):
 
 class LocationData(BaseModel):
     country: str
-    percentage: str
+    percentage: float
 
 class TikTokLocation(BaseModel):
     primary: LocationData
@@ -98,7 +98,7 @@ def handle_tt_location_breakdown(image_bytes: bytes):
                 'Output the values in Tik Tok Location breakdown. '
                 'For each location (primary, second, third, fourth, other), provide structured output with: '
                 'country: the country name, '
-                'percentage: the percentage value shown in the image. '
+                'percentage: the percentage value shown in the image converted to decimal. '
                 'Primary is the largest country, second is the second largest, etc.'
             ),
             image
@@ -113,8 +113,8 @@ def handle_tt_location_breakdown(image_bytes: bytes):
     return result
 
 class IGGender(BaseModel):
-    male: str
-    female: str
+    male: float
+    female: float
 
 def handle_IG_gender_breakdown(image_bytes: bytes):
     image = Image.open(BytesIO(image_bytes))
@@ -125,8 +125,8 @@ def handle_IG_gender_breakdown(image_bytes: bytes):
             (
                 'Output the values in IG Gender breakdown'
                 'ouptut: '
-                'male: percentage in photo'
-                'female: percentage in photo'
+                'male: percentage in photo converted to decimal'
+                'female: percentage in photo converted to decimal'
             ),
             image
         ],
