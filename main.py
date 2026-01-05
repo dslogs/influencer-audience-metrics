@@ -18,11 +18,11 @@ client = genai.Client(api_key=GEMINI_API_KEY)
 
 
 class TikTokAge(BaseModel):
-    quartile_1: str
-    quartile_2: str
-    quartile_3: str
-    quartile_4: str
-    quartile_5: str
+    quartile_1: float # 18 - 24
+    quartile_2: float # 25 - 34
+    quartile_3: float # 35 - 44
+    quartile_4: float # 45 - 54
+    quartile_5: float # 55 + 
 
 def handle_tt_age_breakdown(image_bytes: bytes):
     image = Image.open(BytesIO(image_bytes))
@@ -37,7 +37,7 @@ def handle_tt_age_breakdown(image_bytes: bytes):
                 'quartile 2: 25-34'
                 'quartile 3: 35-44'
                 '...etc'
-                '**Output for each quartile field should only be the percentage shown in the image**'
+                '**Output for each quartile field should only be the percentage shown in the image converted to decimal**'
             ),
             image
         ],

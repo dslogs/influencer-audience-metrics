@@ -63,5 +63,5 @@ def get_influencer_metric_attachments(record_id: str) -> AudienceMetrics:
 
 
 
-res = get_influencer_metric_attachments('recDHW9EvpbgWsF3V')
-print(res)
+# res = get_influencer_metric_attachments('recDHW9EvpbgWsF3V')
+# print(res)
