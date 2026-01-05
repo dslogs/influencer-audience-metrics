@@ -3,11 +3,11 @@ import functions_framework
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
-from pydantic import BaseModel
 from PIL import Image
 from io import BytesIO
 from flask import jsonify
 from at import get_influencer_metric_attachments
+from models import TikTokAge, TikTokGender, LocationData, TikTokLocation, IGAge, IGGender, IGLocation
 
 load_dotenv()
 
@@ -16,13 +16,6 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 API_KEY = os.getenv("API_KEY")
 client = genai.Client(api_key=GEMINI_API_KEY)
 
-
-class TikTokAge(BaseModel):
-    quartile_1: float # 18 - 24
-    quartile_2: float # 25 - 34
-    quartile_3: float # 35 - 44
-    quartile_4: float # 45 - 54
-    quartile_5: float # 55 + 
 
 def handle_tt_age_breakdown(image_bytes: bytes):
     image = Image.open(BytesIO(image_bytes))
@@ -50,9 +43,6 @@ def handle_tt_age_breakdown(image_bytes: bytes):
     result = TikTokAge.model_validate_json(response.text)
     return result
 
-class TikTokGender(BaseModel):
-    male: float
-    female: float
 
 def handle_tt_gender_breakdown(image_bytes: bytes):
     image = Image.open(BytesIO(image_bytes))
@@ -77,16 +67,6 @@ def handle_tt_gender_breakdown(image_bytes: bytes):
     result = TikTokGender.model_validate_json(response.text)
     return result
 
-class LocationData(BaseModel):
-    country: str
-    percentage: float
-
-class TikTokLocation(BaseModel):
-    primary: LocationData
-    second: LocationData
-    third: LocationData
-    fourth: LocationData
-    other: LocationData
 
 def handle_tt_location_breakdown(image_bytes: bytes):
     image = Image.open(BytesIO(image_bytes))
@@ -112,14 +92,6 @@ def handle_tt_location_breakdown(image_bytes: bytes):
     result = TikTokLocation.model_validate_json(response.text)
     return result
 
-class IGAge(BaseModel):
-    quartile_1: float # 13 - 17
-    quartile_2: float # 18 - 24
-    quartile_3: float # 25 - 34
-    quartile_4: float # 35 - 44
-    quartile_5: float # 45 - 54
-    quartile_6: float # 55 - 64
-    quartile_7: float # 65+
 
 def handle_ig_age_breakdown(image_bytes: bytes):
     image = Image.open(BytesIO(image_bytes))
@@ -150,9 +122,6 @@ def handle_ig_age_breakdown(image_bytes: bytes):
     result = IGAge.model_validate_json(response.text)
     return result
 
-class IGGender(BaseModel):
-    male: float
-    female: float
 
 def handle_IG_gender_breakdown(image_bytes: bytes):
     image = Image.open(BytesIO(image_bytes))
@@ -177,12 +146,6 @@ def handle_IG_gender_breakdown(image_bytes: bytes):
     result = IGGender.model_validate_json(response.text)
     return result
 
-class IGLocation(BaseModel):
-    primary: LocationData
-    second: LocationData
-    third: LocationData
-    fourth: LocationData
-    other: LocationData
 
 def handle_ig_location_breakdown(image_bytes: bytes):
     image = Image.open(BytesIO(image_bytes))
@@ -233,7 +196,6 @@ def main(request):
         if images['tt_age'] is not None:
             tt_age = handle_tt_age_breakdown(images['tt_age'])
         
-        # TODO: need to implement all the IG metrics functions
         ig_gender = None
         if images['ig_gender'] is not None:
             ig_gender = handle_IG_gender_breakdown(images['ig_gender'])
