@@ -112,6 +112,44 @@ def handle_tt_location_breakdown(image_bytes: bytes):
     result = TikTokLocation.model_validate_json(response.text)
     return result
 
+class IGAge(BaseModel):
+    quartile_1: float # 13 - 17
+    quartile_2: float # 18 - 24
+    quartile_3: float # 25 - 34
+    quartile_4: float # 35 - 44
+    quartile_5: float # 45 - 54
+    quartile_6: float # 55 - 64
+    quartile_7: float # 65+
+
+def handle_ig_age_breakdown(image_bytes: bytes):
+    image = Image.open(BytesIO(image_bytes))
+
+    response = client.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=[
+            (
+                'Output the values in Instagram Age breakdown for each quartile'
+                'ouptut: '
+                'quartile 1: 13-17'
+                'quartile 2: 18-24'
+                'quartile 3: 25-34'
+                'quartile 4: 35-44'
+                'quartile 5: 45-54'
+                'quartile 6: 55-64'
+                'quartile 7: 65+'
+                '**Output for each quartile field should only be the percentage shown in the image converted to decimal**'
+            ),
+            image
+        ],
+        config=types.GenerateContentConfig(
+            response_mime_type='application/json',
+            response_schema=IGAge
+        )
+    )
+
+    result = IGAge.model_validate_json(response.text)
+    return result
+
 class IGGender(BaseModel):
     male: float
     female: float
@@ -168,13 +206,17 @@ def main(request):
         ig_gender = None
         if images['ig_gender'] is not None:
             ig_gender = handle_IG_gender_breakdown(images['ig_gender'])
-        
+
+        ig_age = None
+        if images['ig_age'] is not None:
+            ig_age = handle_ig_age_breakdown(images['ig_age'])
 
         return jsonify({
             'tt_location': tt_location.model_dump() if tt_location else None,
             'tt_gender' : tt_gender.model_dump() if tt_gender else None,
             'tt_age' : tt_age.model_dump() if tt_age else None,
-            'ig_gender': ig_gender.model_dump() if ig_gender else None
+            'ig_gender': ig_gender.model_dump() if ig_gender else None,
+            'ig_age': ig_age.model_dump() if ig_age else None
         })
 
 
