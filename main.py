@@ -177,6 +177,37 @@ def handle_IG_gender_breakdown(image_bytes: bytes):
     result = IGGender.model_validate_json(response.text)
     return result
 
+class IGLocation(BaseModel):
+    primary: LocationData
+    second: LocationData
+    third: LocationData
+    fourth: LocationData
+    other: LocationData
+
+def handle_ig_location_breakdown(image_bytes: bytes):
+    image = Image.open(BytesIO(image_bytes))
+
+    response = client.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=[
+            (
+                'Output the values in Instagram Location breakdown. '
+                'For each location (primary, second, third, fourth, other), provide structured output with: '
+                'country: the country name, '
+                'percentage: the percentage value shown in the image converted to decimal. '
+                'Primary is the largest country, second is the second largest, etc.'
+            ),
+            image
+        ],
+        config=types.GenerateContentConfig(
+            response_mime_type='application/json',
+            response_schema=IGLocation
+        )
+    )
+
+    result = IGLocation.model_validate_json(response.text)
+    return result
+
 
 @functions_framework.http
 def main(request):
@@ -211,12 +242,17 @@ def main(request):
         if images['ig_age'] is not None:
             ig_age = handle_ig_age_breakdown(images['ig_age'])
 
+        ig_location = None
+        if images['ig_location'] is not None:
+            ig_location = handle_ig_location_breakdown(images['ig_location'])
+
         return jsonify({
             'tt_location': tt_location.model_dump() if tt_location else None,
             'tt_gender' : tt_gender.model_dump() if tt_gender else None,
             'tt_age' : tt_age.model_dump() if tt_age else None,
             'ig_gender': ig_gender.model_dump() if ig_gender else None,
-            'ig_age': ig_age.model_dump() if ig_age else None
+            'ig_age': ig_age.model_dump() if ig_age else None,
+            'ig_location': ig_location.model_dump() if ig_location else None
         })
 
 
