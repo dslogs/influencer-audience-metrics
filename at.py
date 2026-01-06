@@ -185,12 +185,31 @@ def update_influencer_ig_location(influencer_id: str, data: IGLocation):
 # print(r)
 
 # Test update_influencer_tt_location
-test_location_data = TikTokLocation(
-    primary=LocationData(country="United States", percentage=0.45),
-    second=LocationData(country="Canada", percentage=0.203),
-    third=LocationData(country="United Kingdom", percentage=0.152),
-    fourth=LocationData(country="Australia", percentage=0.1),
-    other=LocationData(country="Other", percentage=0.09)
-)
+# test_location_data = TikTokLocation(
+#     primary=LocationData(country="United States", percentage=0.45),
+#     second=LocationData(country="Canada", percentage=0.203),
+#     third=LocationData(country="United Kingdom", percentage=0.152),
+#     fourth=LocationData(country="Australia", percentage=0.1),
+#     other=LocationData(country="Other", percentage=0.09)
+# )
 
-r = update_influencer_tt_location('recP8HESeDrmbkx24', test_location_data)
+# r = update_influencer_tt_location('recP8HESeDrmbkx24', test_location_data)
+
+# test_influencer_ig_age = IGAge(quartile_1=0.1, quartile_2=0.2, quartile_3=0.3, quartile_4=0.4, quartile_5=0.5, quartile_6=0.6, quartile_7=0.7)
+# update_influencer_ig_age('recP8HESeDrmbkx24', test_influencer_ig_age)
+
+# test_influencer_ig_gender = IGGender(male=0.1, female=0.1)
+# update_influencer_ig_gender('recP8HESeDrmbkx24', test_influencer_ig_gender)
+
+
+# test_location_data = IGLocation(
+#     primary=LocationData(country="USA", percentage=0.1),
+#     second=LocationData(country="CA", percentage=0.2),
+#     third=LocationData(country="UK", percentage=0.3),
+#     fourth=LocationData(country="Aus", percentage=0.4),
+#     other=LocationData(country="Jap", percentage=0.5)
+# )
+
+# update_influencer_ig_location('recP8HESeDrmbkx24', test_location_data)
+
+
