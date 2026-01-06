@@ -6,7 +6,15 @@ from google.genai import types
 from PIL import Image
 from io import BytesIO
 from flask import jsonify
-from at import get_influencer_metric_attachments
+from at import (
+    get_influencer_metric_attachments,
+    update_influencer_tt_age,
+    update_influencer_tt_gender,
+    update_influencer_tt_location,
+    update_influencer_ig_age,
+    update_influencer_ig_gender,
+    update_influencer_ig_location
+)
 from models import TikTokAge, TikTokGender, LocationData, TikTokLocation, IGAge, IGGender, IGLocation
 
 load_dotenv()
@@ -181,32 +189,39 @@ def main(request):
         return jsonify({'error' : 'no access'})
     
     record_id = data.get('record')
+    influencer_id = data.get('influencer')
 
-    if record_id:
+    if record_id and influencer_id:
         images = get_influencer_metric_attachments(record_id)
         tt_location = None
         if images['tt_location'] is not None:
             tt_location = handle_tt_location_breakdown(images['tt_location'])
-        
+            update_influencer_tt_location(influencer_id, tt_location)
+
         tt_gender = None
         if images['tt_gender'] is not None:
             tt_gender = handle_tt_gender_breakdown(images['tt_gender'])
-        
+            update_influencer_tt_gender(influencer_id, tt_gender)
+
         tt_age = None
         if images['tt_age'] is not None:
             tt_age = handle_tt_age_breakdown(images['tt_age'])
-        
+            update_influencer_tt_age(influencer_id, tt_age)
+
         ig_gender = None
         if images['ig_gender'] is not None:
             ig_gender = handle_IG_gender_breakdown(images['ig_gender'])
+            update_influencer_ig_gender(influencer_id, ig_gender)
 
         ig_age = None
         if images['ig_age'] is not None:
             ig_age = handle_ig_age_breakdown(images['ig_age'])
+            update_influencer_ig_age(influencer_id, ig_age)
 
         ig_location = None
         if images['ig_location'] is not None:
             ig_location = handle_ig_location_breakdown(images['ig_location'])
+            update_influencer_ig_location(influencer_id, ig_location)
 
         return jsonify({
             'tt_location': tt_location.model_dump() if tt_location else None,
