@@ -18,6 +18,7 @@ prod_api = Api(PROD_AIRTABLE_API_KEY)
 PROD_INFLUENCER_ACCOUNTS_TABLE_ID = "tblWtH5Fy3et1fK1K"
 
 class AudienceMetrics(TypedDict):
+    influencer_id: str
     tt_age: bytes | None
     tt_gender: bytes | None
     tt_location: bytes | None
@@ -50,6 +51,7 @@ def get_influencer_metric_attachments(record_id: str) -> AudienceMetrics:
     IG_LOCATION  = 'fld8xW2muxZJwdV58'
     IG_GENDER = 'fldZvtxBTQW3mZYzn'
     IG_AGE = 'fldTsq1MgZnzPgeAq'
+    INFLUENCER_PROD_RECORD_ID = 'fld2oyce54EvWtDXh'
 
     tt_location_bytes = get_bytes_for_field(fields.get(TT_LOCATION))
     tt_gender_bytes = get_bytes_for_field(fields.get(TT_GENDER))
@@ -57,8 +59,10 @@ def get_influencer_metric_attachments(record_id: str) -> AudienceMetrics:
     ig_location_bytes = get_bytes_for_field(fields.get(IG_LOCATION))
     ig_gender_bytes = get_bytes_for_field(fields.get(IG_GENDER))
     ig_age_bytes = get_bytes_for_field(fields.get(IG_AGE))
+    influencer_id = fields.get(INFLUENCER_PROD_RECORD_ID)
 
     return AudienceMetrics(
+        influencer_id=influencer_id,
         tt_location=tt_location_bytes,
         tt_gender=tt_gender_bytes,
         tt_age=tt_age_bytes,
