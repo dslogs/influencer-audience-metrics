@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from pyairtable import Api
 import requests
 from typing import TypedDict
-from models import TikTokAge, TikTokGender, TikTokLocation, LocationData
+from models import TikTokAge, TikTokGender, TikTokLocation, LocationData, IGAge, IGGender, IGLocation
 
 load_dotenv()
 
@@ -118,6 +118,62 @@ def update_influencer_tt_location(influencer_id: str, data: TikTokLocation):
        TT_TERTIARY_COUNTRY: data.third.country,
        TT_TERTIARY_COUNTRY_PERCENT: data.third.percentage
     },  typecast=True)
+
+    return res
+
+def update_influencer_ig_age(influencer_id: str, data: IGAge):
+    influencer_accounts = prod_api.table(PROD_AIRTABLE_BASE_ID, PROD_INFLUENCER_ACCOUNTS_TABLE_ID)
+    IG_13_TO_17 = "fldhvKdI0Dc2W3C9H"
+    IG_18_TO_24 = "fldWoC6EYhS9e9bE7"
+    IG_25_TO_34 = "fldezDijOJhPfKKcp"
+    IG_35_TO_44 = "fldM3GbW5RfpnvGx5"
+    IG_45_TO_54 = "fldokv33Lt4TlJSDU"
+    IG_55_TO_64 = "fldHlknDyLl764rqP"
+    IG_65_OVER  = "fldYdnIeWUWGiLUER"
+
+    res = influencer_accounts.update(influencer_id, {
+        IG_13_TO_17: data.quartile_1,
+        IG_18_TO_24: data.quartile_2,
+        IG_25_TO_34: data.quartile_3,
+        IG_35_TO_44: data.quartile_4,
+        IG_45_TO_54: data.quartile_5,
+        IG_55_TO_64: data.quartile_6,
+        IG_65_OVER: data.quartile_7
+    })
+
+    return res
+
+def update_influencer_ig_gender(influencer_id: str, data: IGGender):
+    influencer_accounts = prod_api.table(PROD_AIRTABLE_BASE_ID, PROD_INFLUENCER_ACCOUNTS_TABLE_ID)
+    IG_MALE = 'fldt0o7BuQh1Pb5HO'
+    IG_FEMALE = 'fldBJtTLMA0uRhjhN'
+
+    res = influencer_accounts.update(influencer_id, {
+        IG_MALE: data.male,
+        IG_FEMALE: data.female
+    })
+
+    return res
+
+def update_influencer_ig_location(influencer_id: str, data: IGLocation):
+    influencer_accounts = prod_api.table(PROD_AIRTABLE_BASE_ID, PROD_INFLUENCER_ACCOUNTS_TABLE_ID)
+    IG_PRIMARY_COUNTRY = 'fld9MWyta6WLouKar'
+    IG_PRIMARY_COUNTRY_PERCENT = 'fld5d1DFcVSxl3KkI'
+
+    IG_SECONDARY_COUNTRY = 'fldJ6LsYk0tNxKcHY'
+    IG_SECONDARY_COUNTRY_PERCENT = 'fldcTCZPySSNL8MsJ'
+
+    IG_TERTIARY_COUNTRY = 'fldriUkHehCm1llQO'
+    IG_TERTIARY_COUNTRY_PERCENT = 'fldEfUGPC4tBaIWNM'
+
+    res = influencer_accounts.update(influencer_id, {
+        IG_PRIMARY_COUNTRY: data.primary.country,
+        IG_PRIMARY_COUNTRY_PERCENT: data.primary.percentage,
+        IG_SECONDARY_COUNTRY: data.second.country,
+        IG_SECONDARY_COUNTRY_PERCENT: data.second.percentage,
+        IG_TERTIARY_COUNTRY: data.third.country,
+        IG_TERTIARY_COUNTRY_PERCENT: data.third.percentage
+    }, typecast=True)
 
     return res
 
