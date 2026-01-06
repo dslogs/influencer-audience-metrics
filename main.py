@@ -16,6 +16,13 @@ from at import (
     update_influencer_ig_location
 )
 from models import TikTokAge, TikTokGender, LocationData, TikTokLocation, IGAge, IGGender, IGLocation
+from googleapiclient.discovery import build
+import google.auth
+
+# Add near top with other setup
+credentials, project = google.auth.default(scopes=['https://www.googleapis.com/auth/drive'])
+drive = build('drive', 'v3', credentials=credentials)
+
 
 load_dotenv()
 
@@ -179,59 +186,71 @@ def handle_ig_location_breakdown(image_bytes: bytes):
     result = IGLocation.model_validate_json(response.text)
     return result
 
+def create_folder():
+    folder = drive.files().create(
+        body={
+            'name': 'FOLDER CREATED BY DERIK TEST',
+            'mimeType': 'application/vnd.google-apps.folder',
+            'parents': ['1BPMFKVHSgeOrZg0dlBm5FRXx-FdR5UHx'] # this is the id of the OPR-ANALYTICS folder
+        }
+    ).execute()
+
+    return folder['id']
 
 @functions_framework.http
 def main(request):
-    data = request.get_json()
-    api_key = request.headers.get('X-API-Key')
+    res = create_folder()
+    return jsonify({ 'id': res })
+    # data = request.get_json()
+    # api_key = request.headers.get('X-API-Key')
 
-    if api_key != API_KEY:
-        return jsonify({'error' : 'no access'})
+    # if api_key != API_KEY:
+    #     return jsonify({'error' : 'no access'})
     
-    record_id = data.get('record')
+    # record_id = data.get('record')
 
-    if record_id:
-        images = get_influencer_metric_attachments(record_id)
-        influencer_id = images['influencer_id']
-        tt_location = None
-        if images['tt_location'] is not None:
-            tt_location = handle_tt_location_breakdown(images['tt_location'])
-            update_influencer_tt_location(influencer_id, tt_location)
+    # if record_id:
+    #     images = get_influencer_metric_attachments(record_id)
+    #     influencer_id = images['influencer_id']
+    #     tt_location = None
+    #     if images['tt_location'] is not None:
+    #         tt_location = handle_tt_location_breakdown(images['tt_location'])
+    #         update_influencer_tt_location(influencer_id, tt_location)
 
-        tt_gender = None
-        if images['tt_gender'] is not None:
-            tt_gender = handle_tt_gender_breakdown(images['tt_gender'])
-            update_influencer_tt_gender(influencer_id, tt_gender)
+    #     tt_gender = None
+    #     if images['tt_gender'] is not None:
+    #         tt_gender = handle_tt_gender_breakdown(images['tt_gender'])
+    #         update_influencer_tt_gender(influencer_id, tt_gender)
 
-        tt_age = None
-        if images['tt_age'] is not None:
-            tt_age = handle_tt_age_breakdown(images['tt_age'])
-            update_influencer_tt_age(influencer_id, tt_age)
+    #     tt_age = None
+    #     if images['tt_age'] is not None:
+    #         tt_age = handle_tt_age_breakdown(images['tt_age'])
+    #         update_influencer_tt_age(influencer_id, tt_age)
 
-        ig_gender = None
-        if images['ig_gender'] is not None:
-            ig_gender = handle_IG_gender_breakdown(images['ig_gender'])
-            update_influencer_ig_gender(influencer_id, ig_gender)
+    #     ig_gender = None
+    #     if images['ig_gender'] is not None:
+    #         ig_gender = handle_IG_gender_breakdown(images['ig_gender'])
+    #         update_influencer_ig_gender(influencer_id, ig_gender)
 
-        ig_age = None
-        if images['ig_age'] is not None:
-            ig_age = handle_ig_age_breakdown(images['ig_age'])
-            update_influencer_ig_age(influencer_id, ig_age)
+    #     ig_age = None
+    #     if images['ig_age'] is not None:
+    #         ig_age = handle_ig_age_breakdown(images['ig_age'])
+    #         update_influencer_ig_age(influencer_id, ig_age)
 
-        ig_location = None
-        if images['ig_location'] is not None:
-            ig_location = handle_ig_location_breakdown(images['ig_location'])
-            update_influencer_ig_location(influencer_id, ig_location)
+    #     ig_location = None
+    #     if images['ig_location'] is not None:
+    #         ig_location = handle_ig_location_breakdown(images['ig_location'])
+    #         update_influencer_ig_location(influencer_id, ig_location)
 
-        return jsonify({
-            'tt_location': tt_location.model_dump() if tt_location else None,
-            'tt_gender' : tt_gender.model_dump() if tt_gender else None,
-            'tt_age' : tt_age.model_dump() if tt_age else None,
-            'ig_gender': ig_gender.model_dump() if ig_gender else None,
-            'ig_age': ig_age.model_dump() if ig_age else None,
-            'ig_location': ig_location.model_dump() if ig_location else None
-        })
+    #     return jsonify({
+    #         'tt_location': tt_location.model_dump() if tt_location else None,
+    #         'tt_gender' : tt_gender.model_dump() if tt_gender else None,
+    #         'tt_age' : tt_age.model_dump() if tt_age else None,
+    #         'ig_gender': ig_gender.model_dump() if ig_gender else None,
+    #         'ig_age': ig_age.model_dump() if ig_age else None,
+    #         'ig_location': ig_location.model_dump() if ig_location else None
+    #     })
 
 
-    else:
-        return jsonify({ 'error': 'no record' })
+    # else:
+    #     return jsonify({ 'error': 'no record' })
