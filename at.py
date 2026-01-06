@@ -20,24 +20,33 @@ PROD_INFLUENCER_ACCOUNTS_TABLE_ID = "tblWtH5Fy3et1fK1K"
 class AudienceMetrics(TypedDict):
     influencer_id: str
     tt_age: bytes | None
+    tt_age_img_type: str | None
     tt_gender: bytes | None
+    tt_gender_img_type: str | None
     tt_location: bytes | None
+    tt_location_img_type: str | None
     ig_age: bytes | None
+    ig_age_img_type: str | None
     ig_gender: bytes | None
+    ig_gender_img_type: str | None
     ig_location: bytes | None
+    ig_location_img_type: str | None
 
-def get_bytes_for_field(data)-> bytes | None:
+def get_bytes_and_type_for_field(data):
     try:
-
         data_bytes = None
+        image_type = None
+
         if data and len(data) > 0:
             first_pic = data[0]
             response = requests.get(first_pic['url'])
             data_bytes = response.content
-        return data_bytes
-    
+            image_type = first_pic['type']
+
+        return data_bytes, image_type
+
     except Exception as e:
-        return None
+        return None, None
 
 def get_influencer_metric_attachments(record_id: str) -> AudienceMetrics:
     audience_metrics = api.table(AIRTABLE_BASE_ID, "tbleVAs7oNLDhUwAk")
@@ -53,12 +62,12 @@ def get_influencer_metric_attachments(record_id: str) -> AudienceMetrics:
     IG_AGE = 'fldTsq1MgZnzPgeAq'
     INFLUENCER_PROD_RECORD_ID = 'flde0jFS2GAXaHMxx'
 
-    tt_location_bytes = get_bytes_for_field(fields.get(TT_LOCATION))
-    tt_gender_bytes = get_bytes_for_field(fields.get(TT_GENDER))
-    tt_age_bytes = get_bytes_for_field(fields.get(TT_AGE))
-    ig_location_bytes = get_bytes_for_field(fields.get(IG_LOCATION))
-    ig_gender_bytes = get_bytes_for_field(fields.get(IG_GENDER))
-    ig_age_bytes = get_bytes_for_field(fields.get(IG_AGE))
+    tt_location_bytes, tt_location_img_type = get_bytes_and_type_for_field(fields.get(TT_LOCATION))
+    tt_gender_bytes, tt_gender_img_type = get_bytes_and_type_for_field(fields.get(TT_GENDER))
+    tt_age_bytes, tt_age_img_type = get_bytes_and_type_for_field(fields.get(TT_AGE))
+    ig_location_bytes, ig_location_img_type = get_bytes_and_type_for_field(fields.get(IG_LOCATION))
+    ig_gender_bytes, ig_gender_img_type  = get_bytes_and_type_for_field(fields.get(IG_GENDER))
+    ig_age_bytes, ig_age_img_type = get_bytes_and_type_for_field(fields.get(IG_AGE))
     influencer_id = fields.get(INFLUENCER_PROD_RECORD_ID)
 
     # ITS A LOOKUP IN AT SO ITS ACTUALLY AN ARRAY
@@ -68,11 +77,17 @@ def get_influencer_metric_attachments(record_id: str) -> AudienceMetrics:
     return AudienceMetrics(
         influencer_id=influencer_id,
         tt_location=tt_location_bytes,
+        tt_location_img_type=tt_location_img_type,
         tt_gender=tt_gender_bytes,
+        tt_gender_img_type=tt_gender_img_type,
         tt_age=tt_age_bytes,
+        tt_age_img_type=tt_age_img_type,
         ig_age=ig_age_bytes,
+        ig_age_img_type=ig_age_img_type,
         ig_gender=ig_gender_bytes,
-        ig_location=ig_location_bytes)
+        ig_gender_img_type=ig_gender_img_type,
+        ig_location=ig_location_bytes,
+        ig_location_img_type=ig_location_img_type)
 
 
 def update_influencer_tt_age(influencer_id: str, data: TikTokAge):
@@ -220,4 +235,7 @@ def update_influencer_ig_location(influencer_id: str, data: IGLocation):
 
 # update_influencer_ig_location('recP8HESeDrmbkx24', test_location_data)
 
+res = get_influencer_metric_attachments('recxVPrnAgHjbJ5Yw')
 
+
+print(res)

@@ -18,8 +18,9 @@ from at import (
 from models import TikTokAge, TikTokGender, LocationData, TikTokLocation, IGAge, IGGender, IGLocation
 from googleapiclient.discovery import build
 import google.auth
+from googleapiclient.http import MediaIoBaseUpload
 
-# Add near top with other setup
+# GOOGLE DRIVE 
 credentials, project = google.auth.default(scopes=['https://www.googleapis.com/auth/drive'])
 drive = build('drive', 'v3', credentials=credentials)
 
@@ -186,10 +187,10 @@ def handle_ig_location_breakdown(image_bytes: bytes):
     result = IGLocation.model_validate_json(response.text)
     return result
 
-def create_folder():
+def create_folder(name: str):
     folder = drive.files().create(
         body={
-            'name': 'FOLDER CREATED BY DERIK TEST',
+            'name': name,
             'mimeType': 'application/vnd.google-apps.folder',
             'parents': ['1BPMFKVHSgeOrZg0dlBm5FRXx-FdR5UHx'] # this is the id of the OPR-ANALYTICS folder
         }
@@ -197,60 +198,88 @@ def create_folder():
 
     return folder['id']
 
+def get_filename_with_extension(base_name: str, mimetype: str) -> str:
+    """Helper to create filename with extension from mimetype"""
+    extension = mimetype.split('/')[1] if '/' in mimetype else 'jpeg'
+    return f"{base_name}.{extension}"
+
+def upload_image(folder_id, filename, image_bytes, mimetype='image/png'):
+    media = MediaIoBaseUpload(BytesIO(image_bytes), mimetype=mimetype)
+    file = drive.files().create(
+        body={
+            'name': filename,
+            'parents': [folder_id]
+        },
+        media_body=media
+    ).execute()
+    return file['id']
+
 @functions_framework.http
 def main(request):
-    res = create_folder()
-    return jsonify({ 'id': res })
-    # data = request.get_json()
-    # api_key = request.headers.get('X-API-Key')
+    data = request.get_json()
+    api_key = request.headers.get('X-API-Key')
 
-    # if api_key != API_KEY:
-    #     return jsonify({'error' : 'no access'})
+    if api_key != API_KEY:
+        return jsonify({'error' : 'no access'})
     
-    # record_id = data.get('record')
+    record_id = data.get('record')
 
-    # if record_id:
-    #     images = get_influencer_metric_attachments(record_id)
-    #     influencer_id = images['influencer_id']
-    #     tt_location = None
-    #     if images['tt_location'] is not None:
-    #         tt_location = handle_tt_location_breakdown(images['tt_location'])
-    #         update_influencer_tt_location(influencer_id, tt_location)
+    if record_id:
+        images = get_influencer_metric_attachments(record_id)
+        influencer_id = images['influencer_id']
+        influencer_drive_folder_id = create_folder(f'OPR_ANALYTICS: {influencer_id}')
 
-    #     tt_gender = None
-    #     if images['tt_gender'] is not None:
-    #         tt_gender = handle_tt_gender_breakdown(images['tt_gender'])
-    #         update_influencer_tt_gender(influencer_id, tt_gender)
+        tt_location = None
+        if images['tt_location'] is not None:
+            tt_location = handle_tt_location_breakdown(images['tt_location'])
+            update_influencer_tt_location(influencer_id, tt_location)
+            mimetype = images['tt_location_img_type'] or 'image/jpeg'
+            upload_image(influencer_drive_folder_id, get_filename_with_extension('tt_location', mimetype), images['tt_location'], mimetype)
 
-    #     tt_age = None
-    #     if images['tt_age'] is not None:
-    #         tt_age = handle_tt_age_breakdown(images['tt_age'])
-    #         update_influencer_tt_age(influencer_id, tt_age)
+        tt_gender = None
+        if images['tt_gender'] is not None:
+            tt_gender = handle_tt_gender_breakdown(images['tt_gender'])
+            update_influencer_tt_gender(influencer_id, tt_gender)
+            mimetype = images['tt_gender_img_type'] or 'image/jpeg'
+            upload_image(influencer_drive_folder_id, get_filename_with_extension('tt_gender', mimetype), images['tt_gender'], mimetype)
 
-    #     ig_gender = None
-    #     if images['ig_gender'] is not None:
-    #         ig_gender = handle_IG_gender_breakdown(images['ig_gender'])
-    #         update_influencer_ig_gender(influencer_id, ig_gender)
+        tt_age = None
+        if images['tt_age'] is not None:
+            tt_age = handle_tt_age_breakdown(images['tt_age'])
+            update_influencer_tt_age(influencer_id, tt_age)
+            mimetype = images['tt_age_img_type'] or 'image/jpeg'
+            upload_image(influencer_drive_folder_id, get_filename_with_extension('tt_age', mimetype), images['tt_age'], mimetype)
 
-    #     ig_age = None
-    #     if images['ig_age'] is not None:
-    #         ig_age = handle_ig_age_breakdown(images['ig_age'])
-    #         update_influencer_ig_age(influencer_id, ig_age)
+        ig_gender = None
+        if images['ig_gender'] is not None:
+            ig_gender = handle_IG_gender_breakdown(images['ig_gender'])
+            update_influencer_ig_gender(influencer_id, ig_gender)
+            mimetype = images['ig_gender_img_type'] or 'image/jpeg'
+            upload_image(influencer_drive_folder_id, get_filename_with_extension('ig_gender', mimetype), images['ig_gender'], mimetype)
 
-    #     ig_location = None
-    #     if images['ig_location'] is not None:
-    #         ig_location = handle_ig_location_breakdown(images['ig_location'])
-    #         update_influencer_ig_location(influencer_id, ig_location)
+        ig_age = None
+        if images['ig_age'] is not None:
+            ig_age = handle_ig_age_breakdown(images['ig_age'])
+            update_influencer_ig_age(influencer_id, ig_age)
+            mimetype = images['ig_age_img_type'] or 'image/jpeg'
+            upload_image(influencer_drive_folder_id, get_filename_with_extension('ig_age', mimetype), images['ig_age'], mimetype)
 
-    #     return jsonify({
-    #         'tt_location': tt_location.model_dump() if tt_location else None,
-    #         'tt_gender' : tt_gender.model_dump() if tt_gender else None,
-    #         'tt_age' : tt_age.model_dump() if tt_age else None,
-    #         'ig_gender': ig_gender.model_dump() if ig_gender else None,
-    #         'ig_age': ig_age.model_dump() if ig_age else None,
-    #         'ig_location': ig_location.model_dump() if ig_location else None
-    #     })
+        ig_location = None
+        if images['ig_location'] is not None:
+            ig_location = handle_ig_location_breakdown(images['ig_location'])
+            update_influencer_ig_location(influencer_id, ig_location)
+            mimetype = images['ig_location_img_type'] or 'image/jpeg'
+            upload_image(influencer_drive_folder_id, get_filename_with_extension('ig_location', mimetype), images['ig_location'], mimetype)
+
+        return jsonify({
+            'tt_location': tt_location.model_dump() if tt_location else None,
+            'tt_gender' : tt_gender.model_dump() if tt_gender else None,
+            'tt_age' : tt_age.model_dump() if tt_age else None,
+            'ig_gender': ig_gender.model_dump() if ig_gender else None,
+            'ig_age': ig_age.model_dump() if ig_age else None,
+            'ig_location': ig_location.model_dump() if ig_location else None
+        })
 
 
-    # else:
-    #     return jsonify({ 'error': 'no record' })
+    else:
+        return jsonify({ 'error': 'no record' })
