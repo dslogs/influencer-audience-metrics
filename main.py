@@ -189,10 +189,10 @@ def main(request):
         return jsonify({'error' : 'no access'})
     
     record_id = data.get('record')
-    influencer_id = data.get('influencer')
 
-    if record_id and influencer_id:
+    if record_id:
         images = get_influencer_metric_attachments(record_id)
+        influencer_id = images['influencer_id']
         tt_location = None
         if images['tt_location'] is not None:
             tt_location = handle_tt_location_breakdown(images['tt_location'])

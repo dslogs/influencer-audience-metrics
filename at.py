@@ -51,7 +51,7 @@ def get_influencer_metric_attachments(record_id: str) -> AudienceMetrics:
     IG_LOCATION  = 'fld8xW2muxZJwdV58'
     IG_GENDER = 'fldZvtxBTQW3mZYzn'
     IG_AGE = 'fldTsq1MgZnzPgeAq'
-    INFLUENCER_PROD_RECORD_ID = 'fld2oyce54EvWtDXh'
+    INFLUENCER_PROD_RECORD_ID = 'flde0jFS2GAXaHMxx'
 
     tt_location_bytes = get_bytes_for_field(fields.get(TT_LOCATION))
     tt_gender_bytes = get_bytes_for_field(fields.get(TT_GENDER))
@@ -60,6 +60,10 @@ def get_influencer_metric_attachments(record_id: str) -> AudienceMetrics:
     ig_gender_bytes = get_bytes_for_field(fields.get(IG_GENDER))
     ig_age_bytes = get_bytes_for_field(fields.get(IG_AGE))
     influencer_id = fields.get(INFLUENCER_PROD_RECORD_ID)
+
+    # ITS A LOOKUP IN AT SO ITS ACTUALLY AN ARRAY
+    if influencer_id:
+        influencer_id = influencer_id[0]
 
     return AudienceMetrics(
         influencer_id=influencer_id,
