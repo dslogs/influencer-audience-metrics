@@ -235,7 +235,3 @@ def update_influencer_ig_location(influencer_id: str, data: IGLocation):
 
 # update_influencer_ig_location('recP8HESeDrmbkx24', test_location_data)
 
-res = get_influencer_metric_attachments('recxVPrnAgHjbJ5Yw')
-
-
-print(res)
