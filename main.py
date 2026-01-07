@@ -30,6 +30,7 @@ load_dotenv()
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 API_KEY = os.getenv("API_KEY")
+SHARED_DRIVE_FOLDER_ID = os.getenv("SHARED_DRIVE_FOLDER_ID")
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 
@@ -192,8 +193,9 @@ def create_folder(name: str):
         body={
             'name': name,
             'mimeType': 'application/vnd.google-apps.folder',
-            'parents': ['1BPMFKVHSgeOrZg0dlBm5FRXx-FdR5UHx'] # this is the id of the OPR-ANALYTICS folder
-        }
+            'parents': [SHARED_DRIVE_FOLDER_ID]
+        },
+        supportsAllDrives=True
     ).execute()
 
     return folder['id']
@@ -210,7 +212,8 @@ def upload_image(folder_id, filename, image_bytes, mimetype='image/png'):
             'name': filename,
             'parents': [folder_id]
         },
-        media_body=media
+        media_body=media,
+        supportsAllDrives=True
     ).execute()
     return file['id']
 
